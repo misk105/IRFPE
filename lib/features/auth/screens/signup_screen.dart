@@ -11,11 +11,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _childrenController = TextEditingController(); // جديد لعدد الأطفال
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController(); // جديد
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   bool _isPasswordVisible = false;
-  bool _isConfirmVisible = false; // جديد
+  bool _isConfirmVisible = false;
   bool _isAgreed = false;
   bool _isFormValid = false;
 
@@ -25,8 +26,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _firstNameController.addListener(_validateForm);
     _lastNameController.addListener(_validateForm);
     _emailController.addListener(_validateForm);
+    _childrenController.addListener(_validateForm);
     _passwordController.addListener(_validateForm);
-    _confirmPasswordController.addListener(_validateForm); // جديد
+    _confirmPasswordController.addListener(_validateForm);
   }
 
   void _validateForm() {
@@ -36,33 +38,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _isFormValid = _firstNameController.text.isNotEmpty &&
           _lastNameController.text.isNotEmpty &&
           emailRegExp.hasMatch(_emailController.text) &&
+          _childrenController.text.isNotEmpty && // شرط إدخال عدد الأطفال
           _passwordController.text.length >= 8 &&
-          _passwordController.text == _confirmPasswordController.text && // شرط التطابق
+          _passwordController.text == _confirmPasswordController.text &&
           _isAgreed;
     });
   }
 
-  // دالة لإظهار نافذة الشروط
   void _showTermsDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Terms and Conditions"),
-        content: const SingleChildScrollView(
-          child: Text(
-            "Welcome to RoboLearn! By using this app, you agree to: \n\n"
-            "1. Keep your account details secure.\n"
-            "2. Not use the app for any illegal activities.\n"
-            "3. Respect the intellectual property of our content.\n\n"
-            "We value your privacy and protect your data according to our policy.",
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Close"),
-          ),
-        ],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("🤖 RoboLearn Terms"),
+        content: const Text("Welcome! We ensure a safe learning environment for your children..."),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("Got it!"))],
       ),
     );
   }
@@ -72,6 +62,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _childrenController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -81,77 +72,74 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text("Sign Up", style: TextStyle(color: Colors.black87)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, iconTheme: const IconThemeData(color: Colors.black87)),
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFFB8E4F9), Color(0xFFCBF0D8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topLeft, end: Alignment.bottomRight,
           ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center, // توسيط العناصر أفقياً
               children: [
                 const SizedBox(height: 10),
+                // أيقونة الروبوت والترحيب بشكل مرح
+                const Icon(Icons.smart_toy_rounded, size: 80, color: Colors.blueAccent),
+                const Text("Join RoboLearn! ", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+                const Text("Learning as playing! ", style: TextStyle(fontSize: 16, color: Colors.blueGrey)),
+                const SizedBox(height: 30),
+
+                // حقول الاسم
                 Row(
                   children: [
-                    Expanded(child: buildField("First Name", Icons.person, _firstNameController)),
+                    Expanded(child: buildField("First Name", Icons.person_outline, _firstNameController)),
                     const SizedBox(width: 12),
-                    Expanded(child: buildField("Last Name", Icons.person, _lastNameController)),
+                    Expanded(child: buildField("Last Name", Icons.person_outline, _lastNameController)),
                   ],
                 ),
                 const SizedBox(height: 16),
-                buildField("Email", Icons.email, _emailController, keyboardType: TextInputType.emailAddress),
+
+                // حقل الإيميل
+                buildField("Parent's Email", Icons.mail_outline, _emailController, keyboardType: TextInputType.emailAddress),
                 const SizedBox(height: 16),
 
-                // حقل كلمة السر الأول
+                // حقل عدد الأطفال (جديد)
+                buildField("Number of Children", Icons.child_care_rounded, _childrenController, keyboardType: TextInputType.number),
+                const SizedBox(height: 16),
+
+                // حقول كلمة السر
                 buildPasswordField("Password", _passwordController, _isPasswordVisible, () {
                   setState(() => _isPasswordVisible = !_isPasswordVisible);
                 }),
-                
                 const SizedBox(height: 16),
-
-                // حقل تأكيد كلمة السر
                 buildPasswordField("Confirm Password", _confirmPasswordController, _isConfirmVisible, () {
                   setState(() => _isConfirmVisible = !_isConfirmVisible);
                 }),
                 
                 const SizedBox(height: 20),
 
-                // خانة الموافقة على الشروط مع رابط قابل للنقر
+                // الموافقة على الشروط
                 Row(
                   children: [
                     Checkbox(
                       value: _isAgreed,
-                      onChanged: (value) {
-                        setState(() => _isAgreed = value!);
-                        _validateForm();
-                      },
+                      onChanged: (value) { setState(() => _isAgreed = value!); _validateForm(); },
                       activeColor: Colors.blue,
                     ),
                     Expanded(
                       child: GestureDetector(
-                        onTap: _showTermsDialog, // فتح النافذة عند النقر
+                        onTap: _showTermsDialog,
                         child: RichText(
                           text: const TextSpan(
                             text: "I agree to the ",
                             style: TextStyle(color: Colors.black54, fontSize: 14),
-                            children: [
-                              TextSpan(
-                                text: "Terms and Conditions",
-                                style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-                              ),
-                            ],
+                            children: [TextSpan(text: "Terms and Conditions", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold))],
                           ),
                         ),
                       ),
@@ -161,6 +149,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 const SizedBox(height: 30),
 
+                // زر التسجيل
                 SizedBox(
                   width: double.infinity,
                   child: Container(
@@ -169,25 +158,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       gradient: _isFormValid 
                         ? const LinearGradient(colors: [Color(0xFF43E97B), Color(0xFF38F9D7)])
                         : LinearGradient(colors: [Colors.grey.shade400, Colors.grey.shade400]),
+                      boxShadow: _isFormValid ? [BoxShadow(color: Colors.green.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))] : [],
                     ),
                     child: ElevatedButton(
-                      onPressed: _isFormValid ? () {
-                        print("Success!");
-                      } : null,
+                      onPressed: _isFormValid ? () => print("Success!") : null,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.all(16),
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
+                        padding: const EdgeInsets.all(16), backgroundColor: Colors.transparent, shadowColor: Colors.transparent,
                       ),
-                      child: const Text("Create Account", style: TextStyle(fontSize: 18, color: Colors.white)),
+                      child: const Text("Start Adventure! 🚀", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Already have an account? Login", style: TextStyle(color: Colors.blue)),
+                  child: const Text("Back to Login", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
                 ),
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -196,7 +183,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // ويدجت لحقول النصوص العادية
   Widget buildField(String hint, IconData icon, TextEditingController controller, {TextInputType keyboardType = TextInputType.text}) {
     return TextField(
       controller: controller,
@@ -205,26 +191,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
         prefixIcon: Icon(icon, color: Colors.blueGrey),
         hintText: hint,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: Colors.white.withOpacity(0.9),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
       ),
     );
   }
 
-  // ويدجت لحقول كلمة السر (لتقليل التكرار)
   Widget buildPasswordField(String hint, TextEditingController controller, bool isVisible, VoidCallback toggleVisibility) {
     return TextField(
       controller: controller,
       obscureText: !isVisible,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.lock, color: Colors.blueGrey),
-        suffixIcon: IconButton(
-          icon: Icon(isVisible ? Icons.visibility : Icons.visibility_off),
-          onPressed: toggleVisibility,
-        ),
+        prefixIcon: const Icon(Icons.lock_outline, color: Colors.blueGrey),
+        suffixIcon: IconButton(icon: Icon(isVisible ? Icons.visibility : Icons.visibility_off), onPressed: toggleVisibility),
         hintText: hint,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: Colors.white.withOpacity(0.9),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
       ),
     );
